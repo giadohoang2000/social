@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
 import { db } from "../../pages/firebase";
 import { fire } from "../../pages/firebase";
@@ -36,7 +37,6 @@ const useForm = () => {
   const handleLogin = async () => {
     clearErrors();
     try {
-      
       const user = await signInWithEmailAndPassword(fire, email, pass);
       console.log(user);
     } catch (err) {
@@ -90,12 +90,29 @@ const useForm = () => {
   //   getUser()
   // }, []);
 
-  const handleLogout = () => {
-    fire.signOut();
-    console.log(fire);
+  const handleLogout = async () => {
+    // fire.signOut();
+
+    await signOut(fire);
+  };
+  const authListener = () => {
+    onAuthStateChanged(fire, (users) => {
+      if (users) {
+        clearInputs();
+        setUsers(users);
+      } else {
+        setUsers("");
+      }
+    });
   };
 
+  useEffect(() => {
+    authListener();
+  }, []);
+
   return {
+    users,
+    setUsers,
     email,
     setEmail,
     pass,

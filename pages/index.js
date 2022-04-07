@@ -13,6 +13,8 @@ import useForm from "../components/form/useForm";
 import Dashboard from "../components/dashboard/Dashboard";
 export default function Home() {
   const {
+    users,
+    setUsers,
     email,
     setEmail,
     pass,
@@ -31,24 +33,30 @@ export default function Home() {
   } = useForm();
   return (
     <div>
-      <Login
-        email={email}
-        setEmail={setEmail}
-        pass={pass}
-        setPass={setPass}
-        userName = {userName}
-        setUserName = {setUserName}
-        DOB = {DOB}
-        setDOB = {setDOB}
-        handleLogin={handleLogin}
-        handleSignUp={handleSignUp}
-        hasAccount={hasAccount}
-        setHasAccount={setHasAccount}
-        emailError={emailError}
-        passError={passError}
-      />
+      {users ? (
         <Dashboard
-          handleLogout={handleLogout}/>
+          users={users}
+          setUsers={setUsers}
+          handleLogout={handleLogout}
+        />
+      ) : (
+        <Login
+          email={email}
+          setEmail={setEmail}
+          pass={pass}
+          setPass={setPass}
+          userName={userName}
+          setUserName={setUserName}
+          DOB={DOB}
+          setDOB={setDOB}
+          handleLogin={handleLogin}
+          handleSignUp={handleSignUp}
+          hasAccount={hasAccount}
+          setHasAccount={setHasAccount}
+          emailError={emailError}
+          passError={passError}
+        />
+      )}
     </div>
   );
 }
