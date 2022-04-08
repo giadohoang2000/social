@@ -4,7 +4,7 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signOut,
+  signOut
 } from "firebase/auth";
 import { db } from "../../pages/firebase";
 import { fire } from "../../pages/firebase";
@@ -27,6 +27,8 @@ const useForm = () => {
   const clearInputs = () => {
     setEmail("");
     setPass("");
+    setUserName("");
+    setDOB("");
   };
 
   const clearErrors = () => {
@@ -38,7 +40,7 @@ const useForm = () => {
     clearErrors();
     try {
       const user = await signInWithEmailAndPassword(fire, email, pass);
-      console.log(user);
+     // console.log(user);
     } catch (err) {
       console.log(err.message);
       switch (err.code) {
@@ -63,6 +65,7 @@ const useForm = () => {
         email: email,
         DOB: DOB,
         createAt: new Date(),
+        updateAt: new Date()
       });
       const user = await createUserWithEmailAndPassword(fire, email, pass);
       console.log(user);

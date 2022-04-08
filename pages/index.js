@@ -11,6 +11,7 @@ import Login from "../components/form/Login";
 import { async } from "@firebase/util";
 import useForm from "../components/form/useForm";
 import Dashboard from "../components/dashboard/Dashboard";
+import Post from "../components/posts/post";
 export default function Home() {
   const {
     users,
@@ -31,6 +32,8 @@ export default function Home() {
     emailError,
     passError,
   } = useForm();
+
+  
   return (
     <div>
       {users ? (
@@ -38,7 +41,9 @@ export default function Home() {
           users={users}
           setUsers={setUsers}
           handleLogout={handleLogout}
-        />
+          
+        />  , <Post/>   
+        
       ) : (
         <Login
           email={email}
