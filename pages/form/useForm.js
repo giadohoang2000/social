@@ -4,15 +4,16 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signOut
+  signOut, 
 } from "firebase/auth";
-import { db } from "../../pages/firebase";
-import { fire } from "../../pages/firebase";
-import Login from "../form/Login";
+import { db, auth } from "../firebase";
+// import { auth } from "../../pages/firebase";
+import Login from "../Login";
 import { async } from "@firebase/util";
-import { collection, getDoc, addDoc, getDocs, doc } from "firebase/firestore";
+import { collection, getDoc, addDoc, getDocs, doc, setDoc } from "firebase/firestore";
 import md5 from "md5";
-import Dashboard from "../dashboard/Dashboard";
+import {useAuthState, userAuthState} from 'react-firebase-hooks/auth'
+import Dashboard from "../Dashboard";
 const useForm = () => {
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState("");
@@ -22,6 +23,7 @@ const useForm = () => {
   const [passError, setPassError] = useState("");
   const [hasAccount, setHasAccount] = useState(false);
   const [DOB, setDOB] = useState("");
+  const [user] = useAuthState(auth)
 
   const userCollectionRef = collection(db, "users");
   const clearInputs = () => {
@@ -39,8 +41,8 @@ const useForm = () => {
   const handleLogin = async () => {
     clearErrors();
     try {
-      const user = await signInWithEmailAndPassword(fire, email, pass);
-     // console.log(user);
+      const _user = await signInWithEmailAndPassword(auth, email, pass);
+      // console.log(user);
     } catch (err) {
       console.log(err.message);
       switch (err.code) {
@@ -59,16 +61,24 @@ const useForm = () => {
   const handleSignUp = async () => {
     clearErrors();
     try {
-      await addDoc(userCollectionRef, {
+      const _user = await createUserWithEmailAndPassword(auth, email, pass);
+      // await addDoc(doc(db, "users", "haha"), {
+      //   name: userName,
+      //   password: md5(pass),
+      //   email: email,
+      //   DOB: DOB,
+      //   createAt: new Date(),
+      //   updateAt: new Date(),
+      // });
+      await setDoc(doc(db, "users", _user.user.uid ),{
         name: userName,
         password: md5(pass),
         email: email,
         DOB: DOB,
         createAt: new Date(),
-        updateAt: new Date()
-      });
-      const user = await createUserWithEmailAndPassword(fire, email, pass);
-      console.log(user);
+        updateAt: new Date(),
+      })
+     
     } catch (err) {
       console.log(err.message);
       switch (err.code) {
@@ -96,10 +106,10 @@ const useForm = () => {
   const handleLogout = async () => {
     // fire.signOut();
 
-    await signOut(fire);
+    await signOut(auth);
   };
   const authListener = () => {
-    onAuthStateChanged(fire, (users) => {
+    onAuthStateChanged(auth, (users) => {
       if (users) {
         clearInputs();
         setUsers(users);

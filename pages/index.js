@@ -7,11 +7,12 @@ import {
 } from "firebase/auth";
 import styles from "../styles/Home.module.css";
 import { fire } from "./firebase";
-import Login from "../components/form/Login";
+import Login from "./Login";
 import { async } from "@firebase/util";
-import useForm from "../components/form/useForm";
-import Dashboard from "../components/dashboard/Dashboard";
-import Post from "../components/posts/post";
+import useForm from "./form/useForm";
+import Dashboard from "./Dashboard";
+import Post from "./posts/post";
+
 export default function Home() {
   const {
     users,
@@ -37,12 +38,13 @@ export default function Home() {
   return (
     <div>
       {users ? (
+        
         <Dashboard
           users={users}
           setUsers={setUsers}
           handleLogout={handleLogout}
-          
-        />  , <Post/>   
+
+        />  
         
       ) : (
         <Login
