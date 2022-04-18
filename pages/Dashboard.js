@@ -2,9 +2,11 @@ import react from "react";
 import useForm from "./form/useForm";
 import styles from "../styles/dashboard.module.css";
 import { fire } from "./firebase";
+import { auth } from "./firebase";
 import Post from "./posts/post";
-const Dashboard = (props) => {
-  const { handleLogout, users } = props;
+import UserInfo from "./user/user";
+const Dashboard = () => {
+  const { handleLogout, users, userName } = useForm();
   return (
     <section className={styles.dashboard}>
       <nav>
@@ -12,7 +14,7 @@ const Dashboard = (props) => {
         <button onClick={handleLogout}>Log out</button>
       </nav>
       <div>
-        <Post/>
+        <Post />
       </div>
     </section>
   );

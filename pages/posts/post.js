@@ -10,10 +10,14 @@ import {
   getDocs,
   doc,
   addDoc,
+  getDoc,
+  query,
 } from "firebase/firestore";
+import Router from "next/router";
 import { async } from "@firebase/util";
 import { useAuthState } from "react-firebase-hooks/auth";
 const Post = () => {
+  const [documentId, getDocumentId] = useState("");
   const [posts, setPosts] = useState([]);
   const [userPosts, setUserPosts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -21,113 +25,105 @@ const Post = () => {
     title: "",
     content: "",
   });
+  
+  useEffect(() => {
+    const getUser = () => {
+      onSnapshot(collection(db, "users"), (snapshot) => {
+        setUsers(snapshot.docs.map(user =>{
+          return {name: user.name, ... user.data()}
+        } ))
+      })
+      
+    };
+    getUser();
+  }, []);
+  
+  
+  useEffect(() => {
+    const getAllUsersPost = () => {
+      const q = query(collection(db, "usersPost"), orderBy("createAt", "desc"));
+      
+      onSnapshot(q, (snapshot) => {
+        let userPosts = [];
+        snapshot.forEach((doc) => {
+          userPosts.push({
+            uid: doc.ref.parent.parent.id,
+            upid: doc.id,
+            data: {
+              title: doc.data().title,
+              content: doc.data().content,
+            },
+          });
+        });
+        setUserPosts(userPosts);
+      });
+    };
+    return getAllUsersPost();
+  }, []);
 
-  // useEffect(() => {
-  //   const getName = collection(db, "users");
-  // });
-  //   const getAllUsersPost = () => {
-  //     collectionGroup(db, "userPost");
-  //     orderBy("createAt", "desc");
-  //     onSnapshot(collectionGroup(db,"userPost"), (snapshot) => {
-  //       let userPosts = [];
-  //       snapshot.foreach((doc) => {
-  //         userPosts.push({
-  //           uid: doc.ref.parent.parent.id,
-  //           upid: doc.id,
-  //           data: {
-  //             title: doc.data().title,
-  //             content: doc.data().content,
-  //           },
-  //         });
-  //       });
-  //       setUserPosts(userPosts);
-  //     });
-  //   };
-  // useEffect(() => {
-  //   const getAllUsersPost = () => {
-  //     const auths = getAuth();
-  //     const user = auths.currentUser;
-  //     collectionGroup(db, "userPost");
-  //     orderBy("createAt", "desc");
-  //     onSnapshot(collection(db, "post", user.uid, "userPost"), (snapshot) => {
-  //       let userPosts = [];
-  //       snapshot.foreach((doc) => {
-  //         userPosts.push({
-  //           uid: doc.ref.parent.parent.id,
-  //           upid: doc.id,
-  //           data: {
-  //             title: doc.data().title,
-  //             content: doc.data().content,
-  //           },
-  //         });
-  //       });
-  //       setUserPosts(userPosts);
-  //     });
-  //   };
-  //   return () => getAllUsersPost;
-  // }, []);
+  useEffect(() => {
+    if (!userPosts.length) {
+      return;
+    }
+    const getAllUsers = () => {
+      
+      onSnapshot(collection(db, "users"), ((querySnapshot) => {
+        let users = [];
+        querySnapshot.forEach((doc) => {
+          users.push({
+            id: doc.id,
+            name: doc.name,
+          });
+        });
+        return Promise.resolve(users);
+      }));
+      
+      getAllUsers((users) => {
+        let uids = userPosts.map((usePost) => {
+          return usePost.uid;
+        });
 
-  // const getAllUsers = () => {
-  //   getDocs(collection(db, "users")).then((querySnapshot) => {
-  //     let users = [];
-  //     querySnapshot.forEach((doc) => {
-  //       users.push({
-  //         id: doc.id,
-  //         name: doc.data().userName,
-  //       });
-  //     });
-  //     return Promise.resolve(users);
-  //   });
-  //   getAllUsers.then((users) => {
-  //     let uids = userPosts.map((usePost) => {
-  //       return usePost.uid;
-  //     });
+        let resultUser = users.filter((user) => {
+          return uids.includes(user.id);
+        });
 
-  //     let resultUser = users.filter((user) => {
-  //       return uids.includes(user.id);
-  //     });
-
-  //     let userPostList = [];
-  //     userPosts.map((post) => {
-  //       const users = resultUser.find((u) => {
-  //         return u.id === post.uid;
-  //       });
-  //       userPostList.push({
-  //         id: post.upid,
-  //         authour: users.name,
-  //         title: post.data.title,
-  //         content: post.data.content,
-  //       });
-  //     });
-  //     setPosts(userPostList);
-  //   });
-  // };
-  // useEffect(() => {
-  //   if (!userPosts.length) {
-  //     return;
-  //   }
-  //   getAllUsers();
-  // }, [userPosts]);
+        let userPostList = [];
+        userPosts.map((post) => {
+          const users = resultUser.find((u) => {
+            return u.id === post.uid;
+          });
+          userPostList.push({
+            id: post.upid,
+            authour: users.name,
+            title: post.data.title,
+            content: post.data.content,
+          });
+        });
+        setPosts(userPostList);
+      });
+      return getAllUsers
+    };
+  }, [userPosts]);
 
   const handleCreatePost = async () => {
-      
     try {
       const auths = getAuth();
-      const user = auths.currentUser
-      await addDoc(collection(db, "post",user.uid ,"userPost"), {
-      title: createPosts.title,
-      content: createPosts.content,
-      createAt: new Date(),
-      updateAt: new Date(),
-    });
+      const user = auths.currentUser;
+      await addDoc(collection(db, "posts", user.uid, "userPosts"), {
+        title: createPosts.title,
+        content: createPosts.content,
+        createAt: new Date(),
+        updateAt: new Date(),
+      });
+      alert("Success");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   };
 
   return (
     <>
-      <form onSubmit={handleCreatePost}>
+      <form>
         <label>Title</label>
         <input
           type="text"
@@ -146,9 +142,11 @@ const Post = () => {
             setCreatePost({ ...createPosts, content: e.target.value });
           }}
         />
-        <button type="submit">create</button>
+        <button type="button" onClick={handleCreatePost}>
+          create
+        </button>
       </form>
-      {/* <div className="container">
+      <div className="container">
         <ul>
           {posts.map((post) => (
             <li key={post.id}>
@@ -160,7 +158,7 @@ const Post = () => {
             </li>
           ))}
         </ul>
-      </div> */}
+      </div>
     </>
   );
 };

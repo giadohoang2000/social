@@ -12,7 +12,7 @@ import { async } from "@firebase/util";
 import useForm from "./form/useForm";
 import Dashboard from "./Dashboard";
 import Post from "./posts/post";
-
+import UserInfo from "./user/user";
 export default function Home() {
   const {
     users,

@@ -4,15 +4,20 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signOut, 
+  signOut,
 } from "firebase/auth";
 import { db, auth } from "../firebase";
-// import { auth } from "../../pages/firebase";
 import Login from "../Login";
 import { async } from "@firebase/util";
-import { collection, getDoc, addDoc, getDocs, doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  getDoc,
+  addDoc,
+  getDocs,
+  doc,
+  setDoc,
+} from "firebase/firestore";
 import md5 from "md5";
-import {useAuthState, userAuthState} from 'react-firebase-hooks/auth'
 import Dashboard from "../Dashboard";
 const useForm = () => {
   const [users, setUsers] = useState([]);
@@ -23,7 +28,6 @@ const useForm = () => {
   const [passError, setPassError] = useState("");
   const [hasAccount, setHasAccount] = useState(false);
   const [DOB, setDOB] = useState("");
-  const [user] = useAuthState(auth)
 
   const userCollectionRef = collection(db, "users");
   const clearInputs = () => {
@@ -70,15 +74,14 @@ const useForm = () => {
       //   createAt: new Date(),
       //   updateAt: new Date(),
       // });
-      await setDoc(doc(db, "users", _user.user.uid ),{
+      await setDoc(doc(db, "users", _user.user.uid), {
         name: userName,
         password: md5(pass),
         email: email,
         DOB: DOB,
         createAt: new Date(),
         updateAt: new Date(),
-      })
-     
+      });
     } catch (err) {
       console.log(err.message);
       switch (err.code) {
